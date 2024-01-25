@@ -1,0 +1,25 @@
+Goal:
+
+Test for the speed to do convolution in pure go , goroutine, and Cgo.
+
+Test with max pooling instead of convolution
+
+Small JPG and Large JPG
+
+"""
+Max pooling process in c completed in: 0
+Max pooling process in go completed in: 0
+1000 times average for small image:
+C avg: 2.049518ms
+Go avg: 3.537777ms
+1000 times average for large image:
+C avg: 51.169935ms
+Go avg: 68.120021ms
+Max pooling process completed.
+"""
+
+What's Next?
+
+1. find out how to use cgo in go mods(not use in main.go)
+2. Try to speed up go version by goroutine
+
