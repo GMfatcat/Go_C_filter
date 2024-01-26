@@ -12,6 +12,7 @@ import (
     "image/color"
     "image/jpeg"
     "os"
+    "sync"
     "time"
     "unsafe"
 )
@@ -67,6 +68,39 @@ func MaxPoolingInGo(img *image.Gray, poolSize int) *image.Gray {
         }
     }
 
+    return newImg
+}
+
+func MaxPoolingInGoRoutine(img *image.Gray, poolSize int) *image.Gray {
+    bounds := img.Bounds()
+    width, height := bounds.Dx(), bounds.Dy()
+    newWidth, newHeight := width/poolSize, height/poolSize
+    newImg := image.NewGray(image.Rect(0, 0, newWidth, newHeight))
+
+    var wg sync.WaitGroup
+    wg.Add(newHeight)
+
+    for y := 0; y < newHeight; y++ {
+        go func(y int) {
+
+            defer wg.Done()
+
+            for x := 0; x < newWidth; x++ {
+                var max uint8
+                for i := 0; i < poolSize; i++ {
+                    for j := 0; j < poolSize; j++ {
+                        val := img.GrayAt(x*poolSize+i, y*poolSize+j).Y
+                        if val > max {
+                            max = val
+                        }
+                    }
+                }
+                newImg.SetGray(x, y, color.Gray{Y: max})
+            }
+        }(y)
+    }
+
+    wg.Wait()
     return newImg
 }
 

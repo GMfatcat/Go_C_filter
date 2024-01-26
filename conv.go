@@ -9,36 +9,30 @@ import (
 	"os"
 )
 
-// BlockSize 定义图像块的大小
 const BlockSize = 15
 
 func main() {
-	// 读取图像
+
 	img, err := readImage("../example_img/cat.jpg")
 	if err != nil {
 		fmt.Println("Error reading image:", err)
 		return
 	}
 
-	// 获取图像的宽度和高度
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
 
-	// 将图像分块处理
 	for y := 0; y < height; y += BlockSize {
 		for x := 0; x < width; x += BlockSize {
-			// 获取当前块的边界
+
 			blockBounds := image.Rect(x, y, x+BlockSize, y+BlockSize)
 
-			// 提取当前块的图像数据
 			blockImg := img.(interface {
 				SubImage(r image.Rectangle) image.Image
 			}).SubImage(blockBounds)
 
-			// 在这里可以对 blockImg 进行卷积操作
 			blockImg = applyConvolution(blockImg)
 
-			// 将处理后的块拼接回原始图像中
 			for j := 0; j < BlockSize; j++ {
 				for i := 0; i < BlockSize; i++ {
 					draw.Draw(img.(draw.Image), blockBounds, blockImg, image.Point{}, draw.Over)
@@ -47,21 +41,20 @@ func main() {
 		}
 	}
 
-	// 保存处理后的图像
 	err = saveImage("output.jpg", img)
 	if err != nil {
 		fmt.Println("Error saving image:", err)
 	}
 }
 
-// applyConvolution 对图像块进行平均卷积操作
+// applyConvolution mean kernel
 func applyConvolution(img image.Image) image.Image {
 	bounds := img.Bounds()
 	newImg := image.NewRGBA(bounds)
 
 	for y := 1; y < bounds.Dy()-1; y++ {
 		for x := 1; x < bounds.Dx()-1; x++ {
-			// 获取周围像素的颜色值
+			// value in surrounding area
 			c1 := img.At(x-1, y-1)
 			c2 := img.At(x, y-1)
 			c3 := img.At(x+1, y-1)
@@ -72,7 +65,6 @@ func applyConvolution(img image.Image) image.Image {
 			c8 := img.At(x, y+1)
 			c9 := img.At(x+1, y+1)
 
-			// 计算平均颜色值
 			r1, g1, b1, _ := c1.RGBA()
 			r2, g2, b2, _ := c2.RGBA()
 			r3, g3, b3, _ := c3.RGBA()
@@ -87,7 +79,7 @@ func applyConvolution(img image.Image) image.Image {
 			avgG := (g1 + g2 + g3 + g4 + g5 + g6 + g7 + g8 + g9) / 9
 			avgB := (b1 + b2 + b3 + b4 + b5 + b6 + b7 + b8 + b9) / 9
 
-			// 设置新图像的颜色值
+			// new color
 			newImg.Set(x, y, color.RGBA{
 				uint8(avgR >> 8),
 				uint8(avgG >> 8),
@@ -100,7 +92,6 @@ func applyConvolution(img image.Image) image.Image {
 	return newImg
 }
 
-// readImage 从文件中读取图像
 func readImage(filename string) (image.Image, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -119,7 +110,6 @@ func readImage(filename string) (image.Image, error) {
 	return rgbaImg, nil
 }
 
-// saveImage 将图像保存到文件
 func saveImage(filename string, img image.Image) error {
 	file, err := os.Create(filename)
 	if err != nil {
