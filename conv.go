@@ -13,7 +13,7 @@ const BlockSize = 15
 
 func main() {
 
-	img, err := readImage("../example_img/cat.jpg")
+	img, err := readImage("cat.jpg")
 	if err != nil {
 		fmt.Println("Error reading image:", err)
 		return
