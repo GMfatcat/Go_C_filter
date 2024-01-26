@@ -1,5 +1,11 @@
 package process
 
+/*
+#cgo CFLAGS: -Wall
+#include "maxpooling.h"
+*/
+import "C"
+
 import (
     "fmt"
     "image"
@@ -7,7 +13,37 @@ import (
     "image/jpeg"
     "os"
     "time"
+    "unsafe"
 )
+
+// max pooling in c
+func MaxPoolingInC(img *image.Gray, poolSize int) *image.Gray {
+    bounds := img.Bounds()
+    width, height := bounds.Dx(), bounds.Dy()
+    newWidth, newHeight := width/poolSize, height/poolSize
+    newImg := image.NewGray(image.Rect(0, 0, newWidth, newHeight))
+
+    // flatten image for C to max pooling
+    input := make([]uint8, width*height)
+    for y := 0; y < height; y++ {
+        for x := 0; x < width; x++ {
+            input[y*width+x] = img.GrayAt(x, y).Y
+        }
+    }
+
+    // output image is also 1-D array
+    output := make([]uint8, newWidth*newHeight)
+    C.max_pooling((*C.uint8_t)(unsafe.Pointer(&input[0])), (*C.uint8_t)(unsafe.Pointer(&output[0])), C.int(width), C.int(height), C.int(poolSize))
+
+    // transform back to 2D image
+    for y := 0; y < newHeight; y++ {
+        for x := 0; x < newWidth; x++ {
+            newImg.SetGray(x, y, color.Gray{Y: output[y*newWidth+x]})
+        }
+    }
+
+    return newImg
+}
 
 // max pooling in go
 func MaxPoolingInGo(img *image.Gray, poolSize int) *image.Gray {
