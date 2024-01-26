@@ -8,7 +8,7 @@ Test with max pooling instead of convolution
 
 Small JPG and Large JPG
 
-"""
+```
 Max pooling process in c completed in: 10050800
 Max pooling process in go completed in: 3557900
 Max pooling process in goroutine completed in: 517400
@@ -21,7 +21,7 @@ C avg: 51.926401ms
 Go avg: 71.978682ms
 Goroutine avg: 10.886355ms
 Max pooling process completed.
-"""
+```
 
 What's Next?
 
